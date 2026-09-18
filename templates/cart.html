@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Keranjang Belanja - TechStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="fw-bold mb-4 text-dark">
+        <i class="fa-solid fa-cart-shopping text-primary me-2"></i>Keranjang Belanja Anda
+    </h3>
+
+    {% if cart_items %}
+        <div class="row g-4">
+            <!-- Table Item Column -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle cart-table mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Produk</th>
+                                        <th>Harga</th>
+                                        <th style="width: 140px;">Jumlah</th>
+                                        <th>Subtotal</th>
+                                        <th class="text-center pe-4">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart_items %}
+                                        <tr>
+                                            <td class="ps-4 py-3">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}" width="60" height="60" class="rounded-3" onerror="this.onerror=null;this.src='https://via.placeholder.com/60?text=No+Img';">
+                                                    <div>
+                                                        <a href="{{ url_for('product_detail', product_id=item.product.id) }}" class="fw-bold text-dark text-decoration-none d-block">
+                                                            {{ item.product.name }}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="fw-semibold text-secondary">
+                                                {{ item.product.price | rupiah }}
+                                            </td>
+                                            <td>
+                                                <form action="{{ url_for('update_cart') }}" method="POST" class="d-flex align-items-center gap-2">
+                                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" class="form-control form-control-sm text-center" onchange="this.form.submit()">
+                                                </form>
+                                            </td>
+                                            <td class="fw-bold text-primary">
+                                                {{ item.subtotal | rupiah }}
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                <form action="{{ url_for('delete_from_cart') }}" method="POST">
+                                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                                    <button type="submit" class="btn btn-danger-soft btn-sm p-2" title="Hapus produk">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-link text-decoration-none p-0 text-secondary fw-semibold">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Lanjut Belanja
+                    </a>
+                </div>
+            </div>
+
+            <!-- Order Summary Column -->
+            <div class="col-lg-4">
+                <div class="summary-box">
+                    <h5 class="fw-bold mb-3 text-dark">Ringkasan Belanja</h5>
+                    
+                    <div class="d-flex justify-content-between mb-2 text-muted">
+                        <span>Total Item</span>
+                        <span>{{ total_items }} barang</span>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold fs-5 text-dark">Total Harga</span>
+                        <span class="fw-bold fs-5 text-primary">{{ grand_total | rupiah }}</span>
+                    </div>
+
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg w-100 py-3 mb-2">
+                        <i class="fa-solid fa-credit-card me-2"></i> Lanjut ke Checkout
+                    </a>
+                    
+                    <small class="text-muted text-center d-block">
+                        <i class="fa-solid fa-shield-halved text-success me-1"></i> Transaksi Aman & Terpercaya
+                    </small>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-5 text-center">
+            <div class="py-4">
+                <i class="fa-solid fa-cart-arrow-down fs-1 text-muted mb-3 d-block"></i>
+                <h4 class="fw-bold text-secondary">Keranjang Belanja Anda Masih Kosong</h4>
+                <p class="text-muted mb-4">Yuk, temukan berbagai produk menarik dan tambahkan ke keranjang Anda!</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4">
+                    <i class="fa-solid fa-bag-shopping me-2"></i> Lihat Produk Sekarang
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% block scripts %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout Pesanan - TechStore{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="fw-bold mb-4 text-dark">
+        <i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>Checkout Pesanan
+    </h3>
+
+    <form action="{{ url_for('checkout') }}" method="POST">
+        <div class="row g-4">
+            <!-- Customer Information Form Column -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm rounded-4 bg-white">
+                    <div class="card-body p-4 p-md-5">
+                        <h5 class="fw-bold mb-4 text-dark d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-user-pen text-primary"></i> Data Pemesan
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="customer_name" class="form-label fw-semibold text-secondary">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Contoh: Budi Santoso" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="customer_email" class="form-label fw-semibold text-secondary">Alamat Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="customer_email" name="customer_email" placeholder="budi@example.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customer_phone" class="form-label fw-semibold text-secondary">Nomor Telepon / WA <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="customer_phone" name="customer_phone" placeholder="081234567890" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="customer_address" class="form-label fw-semibold text-secondary">Alamat Pengiriman Lengkap <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="customer_address" name="customer_address" rows="4" placeholder="Jalan, Nomor Rumah, RT/RW, Kecamatan, Kota/Kabupaten, Kode Pos" required></textarea>
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-3 mb-0 d-flex gap-3 align-items-center">
+                            <i class="fa-solid fa-circle-info fs-4"></i>
+                            <div class="small">
+                                Pembayaran dilakukan secara Cash on Delivery (COD) atau Transfer Bank setelah pesanan dikonfirmasi.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Column -->
+            <div class="col-lg-5">
+                <div class="summary-box">
+                    <h5 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-receipt text-primary"></i> Ringkasan Pesanan
+                    </h5>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for item in cart_items %}
+                            <li class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center bg-transparent border-bottom">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ item.product.image }}" alt="{{ item.product.name }}" width="48" height="48" class="rounded-2" onerror="this.onerror=null;this.src='https://via.placeholder.com/48?text=No+Img';">
+                                    <div>
+                                        <div class="fw-semibold text-dark small">{{ item.product.name }}</div>
+                                        <small class="text-muted">{{ item.quantity }} x {{ item.product.price | rupiah }}</small>
+                                    </div>
+                                </div>
+                                <span class="fw-bold text-secondary small">{{ item.subtotal | rupiah }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-flex justify-content-between mb-4 pt-2">
+                        <span class="fw-bold fs-5 text-dark">Total Pembayaran</span>
+                        <span class="fw-bold fs-5 text-primary">{{ grand_total | rupiah }}</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg py-3">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Buat Pesanan
+                        </button>
+                        <a href="{{ url_for('cart') }}" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Keranjang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
