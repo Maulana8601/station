@@ -1,7 +1,8 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+
 import pymysql
 import pymysql.cursors
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 
 # ======================================================
 # Inisialisasi Aplikasi Flask
@@ -20,7 +21,7 @@ MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
 MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
 MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
 MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'ecommerce_db')
-MYSQL_PORT = int(os.environ.get('MYSQL_PORT', 3306))
+MYSQL_PORT = int(os.environ.get('MYSQL_PORT', "3306"))
 
 def get_db_connection():
     """
@@ -74,8 +75,8 @@ def index():
             cursor.execute("SELECT * FROM products ORDER BY id DESC")
             products = cursor.fetchall()
         conn.close()
-    except Exception as e:
-        flash(f"Gagal terhubung ke database MySQL: {str(e)}", "danger")
+    except pymysql.MySQLError as e:
+        flash(f"Gagal terhubung ke database MySQL: {e!s}", "danger")
         products = []
 
     return render_template('index.html', products=products)
@@ -101,8 +102,8 @@ def product_detail(product_id):
 
         return render_template('product_detail.html', product=product)
 
-    except Exception as e:
-        flash(f"Terjadi kesalahan database: {str(e)}", "danger")
+    except pymysql.MySQLError as e:
+        flash(f"Terjadi kesalahan database: {e!s}", "danger")
         return redirect(url_for('index'))
 
 
@@ -174,8 +175,8 @@ def cart():
                             'subtotal': subtotal
                         })
             conn.close()
-        except Exception as e:
-            flash(f"Gagal memuat keranjang dari database: {str(e)}", "danger")
+        except pymysql.MySQLError as e:
+            flash(f"Gagal memuat keranjang dari database: {e!s}", "danger")
 
     return render_template('cart.html', cart_items=cart_items, grand_total=grand_total, total_items=total_items)
 
@@ -288,8 +289,8 @@ def checkout():
 
         conn.close()
 
-    except Exception as e:
-        flash(f"Terjadi kesalahan saat memproses checkout: {str(e)}", "danger")
+    except pymysql.MySQLError as e:
+        flash(f"Terjadi kesalahan saat memproses checkout: {e!s}", "danger")
         return redirect(url_for('cart'))
 
     return render_template('checkout.html', cart_items=cart_items, grand_total=grand_total)
@@ -325,8 +326,8 @@ def order_success(order_id):
         conn.close()
         return render_template('success.html', order=order, order_items=order_items)
 
-    except Exception as e:
-        flash(f"Gagal mengambil detail pesanan: {str(e)}", "danger")
+    except pymysql.MySQLError as e:
+        flash(f"Gagal mengambil detail pesanan: {e!s}", "danger")
         return redirect(url_for('index'))
 
 
