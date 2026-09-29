@@ -11,6 +11,9 @@ __pycache__/
 venv/
 .venv/
 
+# Database dump / local data
+database.sql
+
 # IDE
 .vscode/
 .idea/
