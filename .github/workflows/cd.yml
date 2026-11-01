@@ -29,6 +29,18 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
+      - name: Verify Kubernetes connection
+        run: |
+          echo "---- API Server ----"
+          kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
+          echo
+
+          echo "---- Nodes ----"
+          kubectl get nodes
+
+          echo "---- API Resources ----"
+          kubectl api-resources | grep -E 'deployments|services'
+
       - name: Set image tag
         run: |
           IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
