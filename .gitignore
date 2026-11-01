@@ -24,3 +24,12 @@ Thumbs.db
 
 # Logs
 *.log
+
+#self-hosted
+actions-runner/
+
+#terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
