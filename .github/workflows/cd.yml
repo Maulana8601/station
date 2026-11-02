@@ -25,8 +25,8 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+          mkdir -p "$HOME/.kube"
+          cp /etc/rancher/k3s/k3s.yaml "$HOME/.kube/config"
           chmod 600 $HOME/.kube/config
 
       - name: Check Runner Environment
