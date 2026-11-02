@@ -63,6 +63,21 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Deploying image: ghcr.io/maulana8601/station-app:$IMAGE_TAG"
 
+      - name: Check Terraform Workspace
+        run: |
+          echo "---- Current Directory ----"
+          pwd
+
+          echo "---- Terraform Directory ----"
+          ls -lah ./terraform
+
+          echo "---- Terraform State ----"
+          if [ -f ./terraform/terraform.tfstate ]; then
+            ls -lh ./terraform/terraform.tfstate
+          else
+            echo "Terraform state tidak ditemukan"
+          fi
+
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init
