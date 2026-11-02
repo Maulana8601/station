@@ -42,6 +42,8 @@ jobs:
 
           echo "---- Terraform Provider Path ----"
           echo "$HOME/.kube/config"
+          echo "---- Kubeconfig Content Check ----"
+          test -s "$HOME/.kube/config" && echo "Kubeconfig is not empty" || echo "Kubeconfig is EMPTY"
 
       - name: Verify Kubernetes connection
         run: |
