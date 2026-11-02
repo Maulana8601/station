@@ -29,6 +29,20 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
+      - name: Check Runner Environment
+        run: |
+          echo "---- User ----"
+          whoami
+
+          echo "---- HOME ----"
+          echo "$HOME"
+
+          echo "---- Kubeconfig File ----"
+          ls -l "$HOME/.kube/config"
+
+          echo "---- Terraform Provider Path ----"
+          echo "$HOME/.kube/config"
+
       - name: Verify Kubernetes connection
         run: |
           echo "---- API Server ----"
