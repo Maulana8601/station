@@ -1,4 +1,3 @@
-
 name: CD
 
 on:
@@ -33,16 +32,10 @@ jobs:
         run: |
           echo "---- User ----"
           whoami
-
           echo "---- HOME ----"
           echo "$HOME"
-
           echo "---- Kubeconfig File ----"
           ls -l "$HOME/.kube/config"
-
-          echo "---- Terraform Provider Path ----"
-          echo "$HOME/.kube/config"
-          echo "---- Kubeconfig Content Check ----"
           test -s "$HOME/.kube/config" && echo "Kubeconfig is not empty" || echo "Kubeconfig is EMPTY"
 
       - name: Verify Kubernetes connection
@@ -50,12 +43,8 @@ jobs:
           echo "---- API Server ----"
           kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}'
           echo
-
           echo "---- Nodes ----"
           kubectl get nodes
-
-          echo "---- API Resources ----"
-          kubectl api-resources | grep -E 'deployments|services'
 
       - name: Set image tag
         run: |
@@ -63,30 +52,47 @@ jobs:
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Deploying image: ghcr.io/maulana8601/station-app:$IMAGE_TAG"
 
-      - name: Check Terraform Workspace
+      # === LANGKAH 1: AMBIL STATE LAMA DARI LUAR WORKSPACE ===
+      - name: Restore Terraform State
         run: |
-          echo "---- Current Directory ----"
-          pwd
-
-          echo "---- Terraform Directory ----"
-          ls -lah ./terraform
-
-          echo "---- Terraform State ----"
-          if [ -f ./terraform/terraform.tfstate ]; then
-            ls -lh ./terraform/terraform.tfstate
+          mkdir -p "$HOME/.terraform_states/station-app"
+          if [ -f "$HOME/.terraform_states/station-app/terraform.tfstate" ]; then
+            echo "Menemukan state sebelumnya. Menyalin ke folder project..."
+            cp "$HOME/.terraform_states/station-app/terraform.tfstate" ./terraform/terraform.tfstate
           else
-            echo "Terraform state tidak ditemukan"
+            echo "State tidak ditemukan di storage server. Ini dianggap run bersih."
           fi
 
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init
 
+      # === LANGKAH TINGKAT LANJUT: ONE-TIME RECONCILIATION ===
+      # Jika state kosong tetapi aplikasi sudah ada di K3s, kita paksa Terraform mengenali objek tersebut.
+      - name: Auto Import If State Missing
+        working-directory: ./terraform
+        run: |
+          if ! terraform state list | grep -q "kubernetes_deployment_v1"; then
+            echo "State kosong tetapi aplikasi mungkin ada di kluster. Mencoba melakukan Sinkronisasi/Import..."
+            terraform import -var="app_image=ghcr.io/maulana8601/station-app:${IMAGE_TAG}" kubernetes_deployment_v1.station default/station-app || echo "Deployment belum ada di K3s, lanjut..."
+            terraform import -var="app_image=ghcr.io/maulana8601/station-app:${IMAGE_TAG}" kubernetes_service_v1.station default/station-app || echo "Service belum ada di K3s, lanjut..."
+          fi
+
       - name: Terraform Apply
         working-directory: ./terraform
         run: |
           terraform apply -auto-approve \
             -var="app_image=ghcr.io/maulana8601/station-app:${IMAGE_TAG}"
+
+      # === LANGKAH 2: AMANKAN STATE TERBARU KE LUAR WORKSPACE ===
+      # Disimpan di dalam home directory server agar aman dari proses bersih-bersih Git git checkout selanjutnya.
+      - name: Save Terraform State Securely
+        if: always()
+        run: |
+          if [ -f ./terraform/terraform.tfstate ]; then
+            echo "Mengamankan state terbaru ke direktori server..."
+            cp ./terraform/terraform.tfstate "$HOME/.terraform_states/station-app/terraform.tfstate"
+          fi
 
       - name: Wait for rollout to complete
         run: |
@@ -97,6 +103,5 @@ jobs:
         run: |
           echo "---- Pods ----"
           kubectl get pods -l app=station-app -o wide
-
           echo "---- Services ----"
           kubectl get services station-app
